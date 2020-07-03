@@ -53,8 +53,12 @@ I choose the 100k dataset for less cpu intensive computation. The model can be t
   
   
 ## Collaborative Filtering
-Tensorrec by default performs matrix factorization for collaborative filtering. In matrix factorization, two matrices are learnt(user representations and item representations). 
+Tensorrec by default performs matrix factorization for collaborative filtering. In matrix factorization, two matrices are learnt(user representations and item representations).
+
+
 ![Matrix Factorization](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/NMF.png/400px-NMF.png)
+
+
 Here, rows of W are the user representations, columns of H are the item representations, and values in V are the interactions. W and H need to be learned to produce the best approximation of V. V is calculated by multiplying W and H.
 
 #### Performance evaluation for collaborative filtering
@@ -114,7 +118,7 @@ The genre labels were binarized using `Scikit’s MultiLabelBinarizer`. The bina
 [0 0 1 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0]-------------------------------------------------------------------------------------------------
 ```
 
-### Third Step: Training the content based recommender and performance evaluation
+#### Third Step: Training the content based recommender and performance evaluation
 TensorRec model was configured to use a pass-through graph for item features(Item representation = Item features & user representation = how much the user likes that particular genre).
 
 **Output**
@@ -212,6 +216,20 @@ Kill Bill: Vol. 1 (2003)
 
 Social Network, The (2010)
 ```
+
+## Final Conclusion:
+Rather than implementing two models separately, combining the output given by both models to create a hybrid model yields a better result.
+
+## Note: 
+The model can be improved into a state-of-art personal recommender system by tweaking and tuning various things. Some of them are:
+1. Using other loss graphs in content based recommender system.
+2. Adding more metadata like genres in our movies.csv file and engineering those metadata features differently.
+3. Optimizing the various hyper-parameters of the system.
+4. Managing interaction/feedback data differently.
+and so on..
+
+I will try to improve the performance of the hybrid recommender system in the future :).
+
 
 
 
