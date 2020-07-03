@@ -18,7 +18,8 @@ I choose the 100k dataset for less cpu intensive computation. The model can be t
 Firstly, ratings were loaded from ratings.csv. 
 In raw format it looks like,
 
-```userId,movieId,rating,timestamp
+```
+userId,movieId,rating,timestamp
 1,1,4.0,964982703
 1,3,4.0,964981247
 1,6,4.0,964982224
