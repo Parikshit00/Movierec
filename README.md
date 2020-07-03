@@ -35,6 +35,12 @@ I choose the 100k dataset for less cpu intensive computation. The model can be t
   
   ##### Lastly,
   These ratings were reorganized in to a `Scipy sparse matrix`. In this matrix, every row represents a user and every column is a movie. The `[i,j]th` value in this matrix is  User i’s interaction with Movie j.
+  
+  
+## Collaborative Filtering
+Tensorrec by default performs matrix factorization for collaboreative filtering. In matrix factorization, we have to learn two matrices (user representations and item representations) that, when multiplied together, approximate the interactions:
+![Matrix Factorization](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/NMF.png/400px-NMF.png)
+
 
 
 
