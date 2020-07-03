@@ -29,7 +29,7 @@ I choose the 100k dataset for less cpu intensive computation. The model can be t
   ```
 
   Each row represents a single rating : one user’s thoughts about one movie and its timestamp.
-  ** Output: **
+  **Output:**
   ```
   ----------------------------------------------------------Loading ratings---------------------------------------------
 
