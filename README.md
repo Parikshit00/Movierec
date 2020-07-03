@@ -15,7 +15,8 @@ I choose the 100k dataset for less cpu intensive computation. The model can be t
 
 ## Data Pre-processing
 
-Firstly, ratings were loaded from ratings.csv. 
+#####Firstly,
+ratings were loaded from ratings.csv. 
 In raw format it looks like,
 
 ```
@@ -27,7 +28,9 @@ userId,movieId,rating,timestamp
 1,50,5.0,964982931
 ```
 
-Each row specifies how much rating did a user gave to a certain movie and the timestamp of rating given.
+Each row represents a single rating : one user’s thoughts about one movie and its timestamp
+
+
 
 
 
