@@ -10,18 +10,15 @@ import tensorrec
 import logging
 logging.getLogger().setLevel(logging.INFO)
 
-# Open and read in the ratings file
-# NOTE: This expects the ratings.csv file to be in the same folder as this Python file
-# You can download the MovieLens dataset, including ratings.csv, here:
-# https://grouplens.org/datasets/movielens/
+# Reading the ratings file
 print('----------------------------------------------------------Loading ratings---------------------------------------------')
 with open('ratings.csv', 'r') as ratings_file:
     ratings_file_reader = csv.reader(ratings_file)
     raw_ratings = list(ratings_file_reader)
     raw_ratings_header = raw_ratings.pop(0)
 
-# Iterate through the input to map MovieLens IDs to new internal IDs
-# The new internal IDs will be created by the defaultdict on insertion
+#Creating new internal IDs using defaultdict
+
 movielens_to_internal_user_ids = defaultdict(lambda: len(movielens_to_internal_user_ids))
 movielens_to_internal_item_ids = defaultdict(lambda: len(movielens_to_internal_item_ids))
 for row in raw_ratings:
@@ -31,10 +28,10 @@ for row in raw_ratings:
 n_users = len(movielens_to_internal_user_ids)
 n_items = len(movielens_to_internal_item_ids)
 
-# Look at an example raw rating
+# Printing an example of raw ratings from ratings.csv file
 print("------------------------------------------------------------------Raw ratings example:\n{}\n{}------------------------------------------".format(raw_ratings_header, raw_ratings[0]))
 
-# Shuffle the ratings and split them in to train/test sets 80%/20%
+# Shuffling: train = 80% and test = 20%
 random.shuffle(raw_ratings)  # Shuffles the list in-place
 cutoff = int(.8 * len(raw_ratings))
 train_ratings = raw_ratings[:cutoff]
@@ -42,22 +39,19 @@ test_ratings = raw_ratings[cutoff:]
 print("-------------------------------------------{} train ratings, {} test ratings---------------------------------------".format(len(train_ratings), len(test_ratings)))
 
 
-# This method converts a list of (user, item, rating, time) to a sparse matrix
+# converting list of user, item, rating, time to a Scipy sparse matrix
 def interactions_list_to_sparse_matrix(interactions):
     users_column, items_column, ratings_column, _ = zip(*interactions)
     return sparse.coo_matrix((ratings_column, (users_column, items_column)),
                              shape=(n_users, n_items))
-
-
-# Create sparse matrices of interaction data
 sparse_train_ratings = interactions_list_to_sparse_matrix(train_ratings)
 sparse_test_ratings = interactions_list_to_sparse_matrix(test_ratings)
 
-# Construct indicator features for users and items
+# Creating indicator features for users and items
 user_indicator_features = sparse.identity(n_users)
 item_indicator_features = sparse.identity(n_items)
 
-# Build a matrix factorization collaborative filter model
+# Building a matrix factorization collaborative filter model
 cf_model = tensorrec.TensorRec(n_components=5)
 
 # Fit the collaborative filter model
@@ -66,12 +60,12 @@ cf_model.fit(interactions=sparse_train_ratings,
              user_features=user_indicator_features,
              item_features=item_indicator_features)
 
-# Create sets of train/test interactions that are only ratings >= 4.0
+# Create sets of train/test interactions (only ratings >= 4.0 is considerded to be liked)
 sparse_train_ratings_4plus = sparse_train_ratings.multiply(sparse_train_ratings >= 4.0)
 sparse_test_ratings_4plus = sparse_test_ratings.multiply(sparse_test_ratings >= 4.0)
 
 
-# This method consumes item ranks for each user and prints out recall@10 train/test metrics
+# recall@10 train/test metrics
 def check_results(ranks):
     train_recall_at_10 = tensorrec.eval.recall_at_k(
         test_interactions=sparse_train_ratings_4plus,
@@ -87,13 +81,13 @@ def check_results(ranks):
                                                             test_recall_at_10))
 
 
-# Check the results of the MF CF model
+# Result of MF CF model
 print("-------------------------------------------------Matrix factorization collaborative filter:-------------------------------------------------------------")
 predicted_ranks = cf_model.predict_rank(user_features=user_indicator_features,
                                         item_features=item_indicator_features)
 check_results(predicted_ranks)
 
-# Let's try a new loss function: WMRB
+# Using WMRB loss function
 print("--------------------------------------------------------Training collaborative filter with WMRB loss------------------------------------------------------------------")
 ranking_cf_model = tensorrec.TensorRec(n_components=5,
                                        loss_graph=tensorrec.loss_graphs.WMRBLossGraph())
@@ -102,20 +96,20 @@ ranking_cf_model.fit(interactions=sparse_train_ratings_4plus,
                      item_features=item_indicator_features,
                      n_sampled_items=int(n_items * .01))
 
-# Check the results of the WMRB MF CF model
+# results of the WMRB MF CF model
 print("---------------------------------------------------------WMRB matrix factorization collaborative filter:--------------------------------------------------------------------------")
 predicted_ranks = ranking_cf_model.predict_rank(user_features=user_indicator_features,
                                                 item_features=item_indicator_features)
 check_results(predicted_ranks)
 
-# To improve the recommendations, lets read in the movie genres
+# reading the movie genres
 print('------------------------------------------------------------Loading movie metadata------------------------------------------------------------------------')
 with open('movies.csv', 'r',encoding="utf8") as movies_file:
     movies_file_reader = csv.reader(movies_file)
     raw_movie_metadata = list(movies_file_reader)
     raw_movie_metadata_header = raw_movie_metadata.pop(0)
 
-# Map the MovieLens IDs to our internal IDs and keep track of the genres and titles
+# Maping IDs of csv file to internal IDs generated by defaultdict
 movie_genres_by_internal_id = {}
 movie_titles_by_internal_id = {}
 for row in raw_movie_metadata:
@@ -124,16 +118,15 @@ for row in raw_movie_metadata:
     movie_genres_by_internal_id[row[0]] = row[2]
     movie_titles_by_internal_id[row[0]] = row[1]
 
-# Look at an example movie metadata row
+# Raw movie metadata row
 print("-----------------------------------------------------------------------Raw metadata example:\n{}\n{}--------------------------------------------------------------------".format(raw_movie_metadata_header,
                                              raw_movie_metadata[0]))
 
-# Build a list of genres where the index is the internal movie ID and
-# the value is a list of [Genre, Genre, ...]
+# Building a list of genres where the index is the internal movie ID and the value is a list of [Genre, Genre, ...]
 movie_genres = [movie_genres_by_internal_id[internal_id]
                 for internal_id in range(n_items)]
 
-# Transform the genres into binarized labels using scikit's MultiLabelBinarizer
+# Transforming the genres into binarized labels using scikit's MultiLabelBinarizer
 movie_genre_features = MultiLabelBinarizer().fit_transform(movie_genres)
 n_genres = movie_genre_features.shape[1]
 print("-----------------------------------------------------Binarized genres example for movie {}:\n{}-------------------------------------------------------------------------------------------------".format(movie_titles_by_internal_id[0],
