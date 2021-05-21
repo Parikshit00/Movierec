@@ -1,4 +1,4 @@
-tensorflow==1.15.0
+tensorflow==2.5.0
 scipy==1.5.0
 tensorrec==0.26.2
 numpy==1.19.0
